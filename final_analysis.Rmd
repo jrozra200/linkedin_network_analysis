@@ -45,6 +45,8 @@ library(scales)
 
 dat <- read.csv("data/raw/Connections.csv")
 dat$Connected.On <- as.Date(dat$Connected.On, format = "%d %b %Y")
+
+mes <- read.csv("data/raw/messages.csv")
 ```
 
 # Total Connections Over Time
