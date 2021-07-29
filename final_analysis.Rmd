@@ -1,0 +1,168 @@
+---
+title: "LinkedIn Data Analysis"
+author: "Jake Rozran"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+<style>
+body{
+  font-family: 'Oxygen', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+h1,h2,h3,h4 {
+  font-family: 'Raleway', sans-serif;
+}
+
+.container { width: 1000px; }
+h3 {
+  background-color: #D4DAEC;
+  text-indent: 100px; 
+}
+h4 {
+  text-indent: 100px;
+}
+
+g-table-intro h4 {
+  text-indent: 0px;
+}
+</style>
+
+---
+
+```{r setup, include = FALSE}
+library(ggplot2)
+library(dplyr)
+library(kableExtra)
+library(knitr)
+library(scales)
+
+dat <- read.csv("data/raw/Connections.csv")
+dat$Connected.On <- as.Date(dat$Connected.On, format = "%d %b %Y")
+```
+
+# Total Connections Over Time
+
+I currently have **`r dim(dat)[1]`** connections. My first connection was made 
+on October 30, 2008 to [Leigh Sauter](https://www.linkedin.com/in/lhsauter). We 
+were colleagues at The Greater Philadelphia Chamber of Commerce... well, I was 
+an intern and she was an event coordinator. 
+
+```{r total_connections_over_time, echo = FALSE, out.width = "100%", message = FALSE, warning = FALSE}
+plot_dat <- dat %>% 
+    group_by(Connected.On) %>% 
+    summarise(connections = length(Connected.On)) %>% 
+    arrange(Connected.On) %>% 
+    mutate(cumulative = cumsum(connections))
+
+ggplot(plot_dat, aes(x = Connected.On, y = cumulative)) +
+    geom_area(fill = "navy") + 
+    xlab("Connection Date") + 
+    ylab("Total Connections") +
+    theme(panel.background = element_blank(), 
+          panel.grid.major.y = element_line(color = "light gray"),
+          panel.grid.minor.x = element_line(color = "light gray"),
+          panel.grid.major.x = element_line(color = "light gray"),
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_line(color = "light gray"), 
+          axis.text = element_text(color = "black", size = 12),
+          legend.position = "none")
+```
+
+# Most Connections in a Single Day
+
+In my most connected day, 
+`r format(plot_dat$Connected.On[plot_dat$connections == max(plot_dat$connections)], "%B %d, %Y")`
+, I connected with **`r max(plot_dat$connections)`** people! This was the 
+summer after I started my first professional job and was doing some soul 
+searching on the meaning of life and what I want to do with it. 
+
+Here is the table of awesome people who I connected with on that fateful day: 
+
+```{r big_connection, echo = FALSE, out.width = "100%", message = FALSE, warning = FALSE}
+tbl_dat <- dat[dat$Connected.On == plot_dat$Connected.On[
+    plot_dat$connections == max(plot_dat$connections)], ]
+tbl_dat$Email.Address <- NULL
+names(tbl_dat) <- gsub("\\.", " ", names(tbl_dat))
+
+kbl(tbl_dat, row.names = FALSE) %>% 
+            kable_styling(bootstrap_options = c("striped", "condensed"))
+```
+
+# Companies with Most Connections
+
+```{r companies, echo = FALSE, out.width = "100%", message = FALSE, warning = FALSE}
+dat$Company <- ifelse(grepl("Comcast", dat$Company), "Comcast", 
+                      dat$Company)
+
+dat$Company <- ifelse(grepl("Greater Philadelphia Chamber of Commerce", 
+                            dat$Company), 
+                      "The Chamber of Commerce for Greater Philadelphia", 
+                      dat$Company)
+
+dat$Company <- ifelse(dat$Company == "", "NO COMPANY NAMED", dat$Company)
+
+companies <- dat %>% 
+    group_by(Company) %>% 
+    summarise(people = length(Company)) %>% 
+    arrange(-people) %>% 
+    filter(people >= 5)
+```
+
+A significant chunk of people I am connected to on LinkedIn are from places 
+where I work or have worked (Comcast, Socure, CivicActions, Booz Allen 
+Hamilton, and Villanova). With the lionshare of this coming from Comcast, 
+**`r percent(sum(companies$people[companies$Company %in% c("Comcast", "Socure", "CivicActions", "Booz Allen Hamilton", "The Chamber of Commerce for Greater Philadelphia", "Villanova University")]) / dim(dat)[1], accuracy = 0.01)`**
+of my total connections are from my previous workplaces. Granted, more people 
+than this are my former colleagues, they just now work at some new 
+establishment that I've yet to work.
+
+Here are all the companies to which I am connected with 5 or more people:
+
+```{r table, echo = FALSE, out.width = "100%", message = FALSE, warning = FALSE}
+
+kbl(companies, row.names = FALSE) %>% 
+            kable_styling(bootstrap_options = c("striped", "condensed"))
+```
+
+# CEOs I Know
+
+Some of my connections have quite impressive titles. 
+**`r dim(dat[grepl("CEO", dat$Position), ])[1]`** connections have a title of 
+CEO!
+
+Here's that list: 
+
+```{r ceos, echo = FALSE, out.width = "100%", message = FALSE, warning = FALSE}
+tbl_dat <- dat[grepl("CEO", dat$Position), ]
+tbl_dat$Email.Address <- NULL
+names(tbl_dat) <- gsub("\\.", " ", names(tbl_dat))
+
+kbl(tbl_dat, row.names = FALSE) %>% 
+            kable_styling(bootstrap_options = c("striped", "condensed"))
+```
+
+# Data People I Know
+
+Now... data is what I'm all about. Who do I know that has data in their 
+title? **`r dim(dat[grepl("data", tolower(dat$Position)), ])[1]`** 
+connections have data in their title.
+
+Here's that list: 
+
+```{r data_peeps, echo = FALSE, out.width = "100%", message = FALSE, warning = FALSE}
+tbl_dat <- dat[grepl("data", tolower(dat$Position)), ]
+tbl_dat$Email.Address <- NULL
+names(tbl_dat) <- gsub("\\.", " ", names(tbl_dat))
+tbl_dat <- tbl_dat[order(tbl_dat$Company, tbl_dat$`Last Name`, 
+                         tbl_dat$`First Name`), ]
+
+kbl(tbl_dat, row.names = FALSE) %>% 
+            kable_styling(bootstrap_options = c("striped", "condensed"))
+```
