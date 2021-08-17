@@ -29,5 +29,5 @@ That file should be named `Connections.csv`.
 ## Analysis
 
 Once you have your environment set up and the data downloaded and placed in the 
-correct directory, open the file `final_analysis.Rmd` in RStudio and click 
+correct directory, open the file `general_analysis.Rmd` in RStudio and click 
 knit. This will generate an HTML file with your information!
