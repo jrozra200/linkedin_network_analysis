@@ -45,8 +45,6 @@ library(scales)
 
 dat <- read.csv("data/raw/Connections.csv")
 dat$Connected.On <- as.Date(dat$Connected.On, format = "%d %b %Y")
-
-mes <- read.csv("data/raw/messages.csv")
 ```
 
 # Total Connections Over Time
@@ -168,3 +166,5 @@ tbl_dat <- tbl_dat[order(tbl_dat$Company, tbl_dat$`Last Name`,
 kbl(tbl_dat, row.names = FALSE) %>% 
             kable_styling(bootstrap_options = c("striped", "condensed"))
 ```
+
+# LinkedIn Messages
