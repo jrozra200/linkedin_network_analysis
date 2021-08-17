@@ -149,3 +149,22 @@ tbl_dat <- tbl_dat[order(tbl_dat$Company, tbl_dat$`Last Name`,
 kbl(tbl_dat, row.names = FALSE) %>% 
             kable_styling(bootstrap_options = c("striped", "condensed"))
 ```
+
+# DevOps People I Know
+
+Now... data is what I'm all about. Who do I know that has data in their 
+title? **`r dim(dat[grepl("devops", tolower(dat$Position)), ])[1]`** 
+connections have data in their title.
+
+Here's that list: 
+
+```{r devops_peeps, echo = FALSE, out.width = "100%", message = FALSE, warning = FALSE}
+tbl_dat <- dat[grepl("devops", tolower(dat$Position)), ]
+tbl_dat$Email.Address <- NULL
+names(tbl_dat) <- gsub("\\.", " ", names(tbl_dat))
+tbl_dat <- tbl_dat[order(tbl_dat$Company, tbl_dat$`Last Name`, 
+                         tbl_dat$`First Name`), ]
+
+kbl(tbl_dat, row.names = FALSE) %>% 
+            kable_styling(bootstrap_options = c("striped", "condensed"))
+```
